@@ -1,0 +1,24 @@
+name: NexusCharacter
+version: ${project.version}
+main: com.nexuscraft.nexuscharacter.NexusCharacterPlugin
+api-version: '1.21'
+author: Nexus Universe
+description: One sheet for all your skills, with cross-skill perks and prestige.
+softdepend: [NexusLode, NexusSmelting, NexusCuisine, NexusAlchemy, NexusAngler, NexusMomentum, NexusRedstone, NexusMagic]
+
+commands:
+  sheet:
+    description: "Your character sheet: every skill, your perks and your prestige."
+    aliases: [character, charsheet]
+    usage: /sheet [player|perks|prestige|top|skills]
+
+permissions:
+  nexuscharacter.view-others:
+    description: Look at other players' sheets.
+    default: true
+  nexuscharacter.prestige:
+    description: Prestige.
+    default: true
+  nexuscharacter.admin:
+    description: Reload, set prestige stars.
+    default: op

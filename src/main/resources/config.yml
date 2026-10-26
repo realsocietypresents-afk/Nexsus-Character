@@ -1,0 +1,185 @@
+# NexusCharacter -- one sheet for all your skills, perks that need two skills at once, and prestige for veterans.
+
+enabled: true
+
+# Tell players when they unlock or lose a perk.
+messages: true
+
+# How often (seconds) every online player's skills are re-read, so a level-up shows on the sheet and unlocks perks within this long.
+refresh-seconds: 5
+
+# How many players /sheet top lists.
+top-size: 10
+
+# Turn all perks off (the sheet and prestige still work).
+perks-enabled: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+# SKILLS read straight from the Nexus plugins. No change to those plugins is needed: each keeps a player's skill XP as one
+# number on the player ("xp-key") and turns it into a level with xp-base * level^1.5. The top level and xp-base are asked
+# from the other plugin's own config (skill.max-level / skill.xp-base); the values here are only used if that fails.
+# A skill is listed only while its plugin is running. Set "enabled: false" to hide one, or "reset: false" to stop prestige
+# from wiping it. Plugins can also add skills themselves through the shared registry (see the README).
+# type: xp (default) reads the XP number; wizard-service asks NexusMagic's WizardLevelAPI (it cannot be reset).
+# ---------------------------------------------------------------------------------------------------------------------
+skills:
+  lode:
+    plugin: NexusLode
+    name: Mining
+    xp-key: "nexuslode:lode_xp"
+    max-level: 50
+    xp-base: 8.0
+  smelting:
+    plugin: NexusSmelting
+    name: Smelting
+    xp-key: "nexussmelting:smelting_xp"
+    max-level: 50
+    xp-base: 6.0
+  cuisine:
+    plugin: NexusCuisine
+    name: Cooking
+    xp-key: "nexuscuisine:cuisine_xp"
+    max-level: 40
+    xp-base: 10.0
+  alchemy:
+    plugin: NexusAlchemy
+    name: Alchemy
+    xp-key: "nexusalchemy:alchemy_xp"
+    max-level: 20
+    xp-base: 14.0
+  angler:
+    plugin: NexusAngler
+    name: Fishing
+    xp-key: "nexusangler:angler_xp"
+    max-level: 20
+    xp-base: 12.0
+  momentum:
+    plugin: NexusMomentum
+    name: Traversal
+    xp-key: "nexusmomentum:momentum_xp"
+    max-level: 50
+    xp-base: 6.0
+  redstone:
+    plugin: NexusRedstone
+    name: Engineering
+    xp-key: "nexusredstone:engineer_xp"
+    max-level: 50
+    xp-base: 10.0
+  magic:
+    plugin: NexusMagic
+    type: wizard-service
+    name: Wizardry
+    max-level: 30
+    reset: false
+
+# ---------------------------------------------------------------------------------------------------------------------
+# PERKS: steady bonuses for people who are good at several things at once.
+#   requires:      skill id -> level needed (ids as in "skills" above, or registered by a plugin)
+#   min-total:     total of all skill levels needed (optional)
+#   min-prestige:  prestige stars needed (optional)
+#   effects:       one line each:
+#       potion:HASTE:0                    a quiet, steady potion effect (the number is the level minus one)
+#       attribute:MAX_HEALTH:2:add        +2 health points (one heart). Last word: add, scalar (a fraction of the base, 0.04 = +4%)
+#                                         or multiply. Names: MAX_HEALTH, MOVEMENT_SPEED, ARMOR, ATTACK_DAMAGE, LUCK, ...
+#       xp:10                             10% more experience from orbs
+# Prestige stars (prestige.strength-per-star below) make attribute and xp effects bigger. Potion effects do not scale.
+# A perk with a skill that is not installed is simply inactive; nobody loses anything because a plugin is missing.
+# ---------------------------------------------------------------------------------------------------------------------
+perks:
+  hearty-digger:
+    name: Hearty Digger
+    description: A miner who can cook never goes hungry underground.
+    requires:
+      lode: 15
+      cuisine: 15
+    effects:
+      - "attribute:MAX_HEALTH:2:add"
+  trail-provisions:
+    name: Trail Provisions
+    description: Packed meals and practiced feet.
+    requires:
+      momentum: 15
+      cuisine: 10
+    effects:
+      - "attribute:MOVEMENT_SPEED:0.04:scalar"
+  furnace-brewer:
+    name: Furnace Brewer
+    description: Steady heat makes steady potions, and a steady mind.
+    requires:
+      smelting: 15
+      alchemy: 10
+    effects:
+      - "xp:12"
+  tunnel-engineer:
+    name: Tunnel Engineer
+    description: Shafts, rails and redstone, done properly.
+    requires:
+      lode: 20
+      redstone: 15
+    effects:
+      - "potion:HASTE:0"
+  tide-runner:
+    name: Tide Runner
+    description: Anglers who can run swim like dolphins.
+    requires:
+      angler: 10
+      momentum: 10
+    effects:
+      - "potion:DOLPHINS_GRACE:0"
+  lucky-hands:
+    name: Lucky Hands
+    description: Fishermen and brewers make their own luck.
+    requires:
+      angler: 15
+      alchemy: 12
+    effects:
+      - "attribute:LUCK:1:add"
+  lamplighter:
+    name: Lamplighter
+    description: A miner with a brewer's eye sees in the dark.
+    requires:
+      lode: 25
+      alchemy: 15
+    effects:
+      - "potion:NIGHT_VISION:0"
+  grand-artisan:
+    name: Grand Artisan
+    description: Good at everything is a skill of its own.
+    min-total: 200
+    effects:
+      - "attribute:ARMOR:2:add"
+  veterans-resolve:
+    name: Veteran's Resolve
+    description: You have done this before.
+    min-prestige: 1
+    effects:
+      - "attribute:MAX_HEALTH:2:add"
+      - "xp:5"
+  master-of-all:
+    name: Master of All
+    description: Three times round the wheel.
+    min-prestige: 3
+    effects:
+      - "attribute:LUCK:1:add"
+      - "attribute:ATTACK_DAMAGE:0.5:add"
+
+# ---------------------------------------------------------------------------------------------------------------------
+# PRESTIGE: master enough skills and wipe them for a permanent star. Only skills that can be reset count (Wizardry cannot).
+# ---------------------------------------------------------------------------------------------------------------------
+prestige:
+  enabled: true
+  # The most stars anyone can have.
+  max-stars: 5
+  # A skill counts as mastered at this fraction of its top level (0.8 = level 40 of 50).
+  mastery-fraction: 0.8
+  # Mastered skills the first star asks for, and how many more each further star asks for.
+  skills-needed: 3
+  skills-needed-step: 1
+  # Each star makes attribute and xp perks this much bigger (0.1 = +10% per star).
+  strength-per-star: 0.1
+  # After "/sheet prestige" shows what will be reset, how long the player has to type "/sheet prestige confirm".
+  confirm-seconds: 30
+  # Announce each new star to the whole server.
+  broadcast: true
+  # Console commands run on each new star; %player% and %stars% are filled in. Example: "give %player% diamond 16"
+  reward-commands: []
